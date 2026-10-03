@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>个人简历 · AI Agent 应用开发</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230E7C6B'/%3E%3Ctext x='32' y='43' font-family='Georgia,serif' font-size='30' fill='%23F6F5F1' text-anchor='middle'%3E%E7%AE%80%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<style>
+  :root{
+    --paper:#F6F5F1;--ink:#17191D;--muted:#5C616B;--line:#E3E1D8;
+    --accent:#0E7C6B;--accent-soft:#E4EFEC;--card:#FFFFFF;--max:980px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:"Noto Sans SC",system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;font-weight:400;line-height:1.75;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 28px}
+
+  /* ===== 编辑提示条 ===== */
+  .hint{background:var(--accent);color:#fff}
+  .hint-inner{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:9px 0}
+  .hint p{font-size:13px;line-height:1.5}
+  .hint .actions{display:flex;gap:8px;align-items:center;flex:none}
+  .hint button{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:7px;padding:4px 12px;font-size:12.5px;cursor:pointer;font-family:inherit}
+  .hint button:hover{background:rgba(255,255,255,.3)}
+  .hint .x{background:none;border:none;font-size:17px;line-height:1;padding:2px 7px}
+
+  /* ===== 顶栏 ===== */
+  header.top{position:sticky;top:0;z-index:20;background:rgba(246,245,241,.88);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .top-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.5px}
+  .mono{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:"Noto Serif SC",serif;font-size:17px;font-weight:700}
+  nav{display:flex;gap:26px}
+  nav a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s}
+  nav a:hover{color:var(--accent)}
+
+  /* ===== 可在线编辑 ===== */
+  .editable{outline:none;border-radius:6px;cursor:text;transition:background .15s,box-shadow .15s}
+  .editable:hover{background:rgba(14,124,107,.09)}
+  .editable:focus{background:#fff;box-shadow:0 0 0 2px var(--accent)}
+
+  /* ===== Hero ===== */
+  .hero{padding:84px 0 56px;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:linear-gradient(#000 78%,transparent);mask-image:linear-gradient(#000 78%,transparent)}
+  .hero .kicker{color:var(--accent);font-size:13px;font-weight:700;letter-spacing:2px;margin-bottom:18px}
+  .hero h1{font-family:"Noto Serif SC",serif;font-weight:900;font-size:clamp(40px,7vw,76px);line-height:1.05;letter-spacing:1px}
+  .hero .role{margin-top:18px;font-size:clamp(17px,2.4vw,22px);font-weight:500}
+  .hero .role b{color:var(--accent);font-weight:700}
+  .hero p.lead{margin-top:22px;max-width:640px;color:var(--muted);font-size:15.5px}
+  .facts{margin-top:36px;display:flex;flex-wrap:wrap;gap:10px 12px}
+  .fact{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 16px;font-size:13.5px;color:var(--muted)}
+  .fact b{color:var(--ink);font-weight:600}
+
+  section{padding:52px 0;border-top:1px solid var(--line)}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:28px}
+  .sec-head h2{font-family:"Noto Serif SC",serif;font-weight:700;font-size:26px;letter-spacing:1px}
+  .sec-head .en{color:var(--muted);font-size:13px;letter-spacing:1px}
+  .sec-head .rule{flex:1;height:1px;background:var(--line);align-self:center}
+
+  .about p{max-width:700px;font-size:15.5px}
+  .about p + p{margin-top:12px}
+
+  .skill-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+  .skill-group{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px}
+  .skill-group h3{font-size:14px;font-weight:700;margin-bottom:14px}
+  .tags{display:flex;flex-wrap:wrap;gap:8px}
+  .tag{background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:500;padding:5px 12px;border-radius:8px}
+
+  .feature{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .feature-top{padding:26px 28px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:flex-start}
+  .feature-top h3{font-family:"Noto Serif SC",serif;font-size:22px;font-weight:700}
+  .feature-top .meta{color:var(--muted);font-size:13px;margin-top:4px}
+  .feature-top .badge{background:var(--accent-soft);color:var(--accent);font-size:12.5px;font-weight:600;padding:5px 13px;border-radius:999px;white-space:nowrap}
+  .feature-body{padding:24px 28px}
+  .feature-body > p{font-size:15px;max-width:760px}
+  .duties{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px 28px}
+  .duties li{list-style:none;display:flex;gap:10px;font-size:14px}
+  .duties li::before{content:"";flex:none;width:7px;height:7px;border-radius:2px;background:var(--accent);margin-top:9px}
+  .feature .stack{margin-top:22px;display:flex;flex-wrap:wrap;gap:7px}
+  .feature .stack span{font-size:12px;color:var(--muted);background:var(--paper);border:1px solid var(--line);padding:4px 11px;border-radius:6px}
+  .highlights{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
+  .highlights .h{padding:20px 24px}
+  .highlights .h + .h{border-left:1px solid var(--line)}
+  .highlights h4{font-size:14.5px;font-weight:700;margin-bottom:6px}
+  .highlights p{font-size:13.5px;color:var(--muted);line-height:1.7}
+
+  .entry{display:grid;grid-template-columns:150px 1fr;gap:24px;padding:22px 0;border-top:1px dashed var(--line)}
+  .entry:first-of-type{border-top:none;padding-top:6px}
+  .entry .when{color:var(--muted);font-size:13.5px;padding-top:3px;font-variant-numeric:tabular-nums}
+  .entry h3{font-size:17px;font-weight:700}
+  .entry .sub{color:var(--accent);font-size:13.5px;font-weight:500;margin:2px 0 8px}
+  .entry p{color:var(--muted);font-size:14.5px;max-width:660px}
+  .bullet-list li{list-style:none;display:flex;gap:10px;font-size:14.5px;padding:7px 0}
+  .bullet-list li::before{content:"";flex:none;width:7px;height:7px;border-radius:2px;background:var(--accent);margin-top:9px}
+
+  .contact-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .contact-grid a,.contact-grid .static-item{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;transition:border-color .2s,transform .2s}
+  .contact-grid a:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .contact-grid svg{width:20px;height:20px;stroke:var(--accent);fill:none;stroke-width:1.8;flex:none}
+  .contact-grid .lab{font-size:12px;color:var(--muted)}
+  .contact-grid .val{font-size:15px;font-weight:500;word-break:break-all}
+
+  footer{padding:34px 0 60px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+
+  @media (max-width:720px){
+    nav{display:none}
+    .skill-grid,.contact-grid,.duties,.highlights{grid-template-columns:1fr}
+    .highlights .h + .h{border-left:none;border-top:1px solid var(--line)}
+    .entry{grid-template-columns:1fr;gap:6px}
+    .hero{padding:56px 0 40px}
+    .hint-inner{flex-direction:column;align-items:flex-start;gap:6px}
+  }
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+  @media print{.hint{display:none}.editable:focus{box-shadow:none;background:none}}
+</style>
+<style id='readonly-lock'>.hint{display:none!important;}.editable{cursor:auto!important;}.editable:hover{background:transparent!important;}.editable:focus{background:transparent!important;box-shadow:none!important;}</style>
+</head>
+<body>
+
+<!-- ===== 编辑提示条 ===== -->
+<div class="hint" id="hintBar">
+  <div class="wrap hint-inner">
+    <p>直接点击下方任意文字即可在线填写，内容会自动保存在本浏览器（刷新不丢）；定稿后用浏览器「打印 → 另存为 PDF」。</p>
+    <div class="actions">
+      <button type="button" id="resetBtn">清空重填</button>
+      <button type="button" class="x" id="closeHint" aria-label="关闭提示">×</button>
+    </div>
+  </div>
+</div>
+
+<header class="top">
+  <div class="wrap top-inner">
+    <div class="brand"><span class="mono">简</span><span>个人简历</span></div>
+    <nav>
+      <a href="#about">关于</a><a href="#skills">技能</a><a href="#project">项目</a><a href="#edu">教育</a><a href="#contact">联系</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== Hero ===== -->
+<div class="hero">
+  <div class="wrap">
+    <div class="kicker">2026 届 · 求职中</div>
+    <h1 class="editable" data-key="name" data-single="1">Jiang Weihua</h1>
+    <div class="role">应聘方向：<b>AI Agent 应用开发工程师（实习 / 校招）</b></div>
+    <p class="lead editable" data-key="lead">
+      电气工程背景的 2026 届本科生，沿 Python → LLM 应用 → Agent / RAG 自学转型。
+      独立做过一个端到端的企业知识问答 Agent：本地大模型做结构化决策，自主判断直接回答还是检索取证，
+      并用 Docker Compose 一键部署。我更在意「能跑、可复现、不编造」，而不只是把 Demo 跑通。
+    </p>
+    <div class="facts">
+      <span class="fact">学历 <b class="editable" data-key="fact_edu" data-single="1">本科 · 电气工程及其自动化</b></span>
+      <span class="fact">期望城市 <b class="editable" data-key="fact_city" data-single="1">深圳</b></span>
+      <span class="fact">方向 <b class="editable" data-key="fact_dir" data-single="1">AI Agent / 大模型应用</b></span>
+      <span class="fact">状态 <b class="editable" data-key="fact_status" data-single="1">2026 届应届 · 随时到岗</b></span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 关于 ===== -->
+<section id="about" class="about">
+  <div class="wrap">
+    <div class="sec-head"><h2>关于我</h2><span class="en">ABOUT</span><span class="rule"></span></div>
+    <p class="editable" data-key="about1">
+      我是一名跨专业转型者：本科学电气工程，却把大量课余时间投入到 AI 应用开发的系统自学中，
+      从 Python 基础一路走到 LLM 应用、Agent 工具调用与 RAG 工程，并独立完成了一个端到端、可容器化部署的项目。
+    </p>
+    <p class="editable" data-key="about2">
+      我习惯先预测执行结果、再动手验证，啃源码不靠死记硬背；写项目时会主动加上幻觉兜底、索引一致性校验和防死循环设计，
+      追求「可上线」而不是「跑通即可」。希望在深圳加入一个做 AI Agent / 大模型应用的团队，从工程实践中持续成长。
+    </p>
+  </div>
+</section>
+
+<!-- ===== 技能 ===== -->
+<section id="skills">
+  <div class="wrap">
+    <div class="sec-head"><h2>专业技能</h2><span class="en">SKILLS</span><span class="rule"></span></div>
+    <div class="skill-grid">
+      <div class="skill-group">
+        <h3>编程语言与后端</h3>
+        <div class="tags"><span class="tag">Python 3.12</span><span class="tag">FastAPI</span><span class="tag">Pydantic</span><span class="tag">Uvicorn</span></div>
+      </div>
+      <div class="skill-group">
+        <h3>LLM 应用开发</h3>
+        <div class="tags"><span class="tag">Prompt 设计</span><span class="tag">JSON 结构化决策</span><span class="tag">Ollama</span><span class="tag">Qwen3 1.7B</span></div>
+      </div>
+      <div class="skill-group">
+        <h3>RAG 与向量检索</h3>
+        <div class="tags"><span class="tag">Sentence Transformers</span><span class="tag">Embedding</span><span class="tag">ChromaDB</span><span class="tag">持久化 / 增量更新</span></div>
+      </div>
+      <div class="skill-group">
+        <h3>Agent 与工程化</h3>
+        <div class="tags"><span class="tag">工具调用 / 多轮循环</span><span class="tag">MCP Python SDK</span><span class="tag">Docker Compose</span><span class="tag">Git</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 重点项目 ===== -->
+<section id="project">
+  <div class="wrap">
+    <div class="sec-head"><h2>项目经历</h2><span class="en">PROJECT</span><span class="rule"></span></div>
+    <div class="feature">
+      <div class="feature-top">
+        <div>
+          <h3 class="editable" data-key="proj_title" data-single="1">AI Agent 企业知识助手</h3>
+          <div class="meta editable" data-key="proj_meta" data-single="1">独立个人项目 ｜ 2026.09 – 至今 ｜ 项目链接：github.com/Heibaixiong1118/ai-agent-study</div>
+        </div>
+        <span class="badge">端到端 · 容器化部署</span>
+      </div>
+      <div class="feature-body">
+        <p class="editable" data-key="proj_desc">
+          面向企业内部制度查询场景，独立设计并实现端到端知识问答 Agent：用户通过 API 提问后，本地大模型生成结构化决策，
+          自主判断直接回答或调用检索工具，从本地制度文档中取证后作答；全链路容器化、可一键部署。
+        </p>
+        <ul class="duties">
+          <li>设计 JSON 结构化决策协议，实现「模型决策 → 工具分发 → Observation 回传」多轮循环，设 4 轮上限防止死循环。</li>
+          <li>实现完整 RAG 链路：文档读取切分 → Embedding 生成 → ChromaDB 持久化索引 → 按问题检索相关片段。</li>
+          <li>开发 rag_search、text_length 工具及统一工具分发器，基于结构化 JSON 决策执行调用。</li>
+          <li>用 FastAPI 实现 POST /agent 问答接口，Pydantic 校验请求，Uvicorn 运行服务。</li>
+          <li>编写 Dockerfile 与 Compose：ChromaDB 命名卷持久化，经 host.docker.internal 访问宿主机 Ollama。</li>
+          <li>以 MCP Python SDK 实现独立 Client / Server 问候工具示例，验证工具发现与调用流程。</li>
+        </ul>
+        <div class="stack">
+          <span>Python 3.12</span><span>FastAPI</span><span>Pydantic</span><span>Ollama</span><span>Qwen3 1.7B</span><span>Sentence Transformers</span><span>ChromaDB</span><span>MCP SDK</span><span>Docker Compose</span>
+        </div>
+      </div>
+      <div class="highlights">
+        <div class="h"><h4>幻觉兜底</h4><p>结合向量相关性与词面证据双重判断检索质量；知识库未命中时明确返回「无法确认」，不把无依据内容编造为公司制度。</p></div>
+        <div class="h"><h4>索引一致性</h4><p>根据文档内容与 Embedding 配置生成指纹，自动检测变化并更新向量索引，保证检索结果与源文档同步。</p></div>
+        <div class="h"><h4>工程可复现</h4><p>Docker Compose 一键拉起全链路，容器内外网络与数据持久化均已打通，并非「只能本地跑」的 Demo。</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 教育 ===== -->
+<section id="edu">
+  <div class="wrap">
+    <div class="sec-head"><h2>教育经历</h2><span class="en">EDUCATION</span><span class="rule"></span></div>
+    <div class="entry">
+      <div class="when editable" data-key="edu_when" data-single="1">2022.09 – 2026.06</div>
+      <div>
+        <h3 class="editable" data-key="edu_school" data-single="1">南宁理工学院 · 本科 · 电气工程及其自动化</h3>
+        <div class="sub">2026 届应届本科生</div>
+        <p class="editable" data-key="edu_note">跨专业自学 AI 应用开发：沿 Python → LLM 应用 → Agent / RAG 工程实践路径系统学习，独立完成上述端到端项目。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 自我评价 ===== -->
+<section id="eval">
+  <div class="wrap">
+    <div class="sec-head"><h2>自我评价</h2><span class="en">PROFILE</span><span class="rule"></span></div>
+    <ul class="bullet-list">
+      <li><span class="editable" data-key="eval1" data-single="1">目标明确的跨专业转型者：电气工程背景，自主完成向 AI 应用开发的转型，有完整可演示的端到端项目与容器化部署经验。</span></li>
+      <li><span class="editable" data-key="eval2" data-single="1">工程意识扎实：项目自带索引一致性校验、幻觉兜底与防死循环设计，追求「可上线」而非「跑通即可」。</span></li>
+      <li><span class="editable" data-key="eval3" data-single="1">学习方法对路：习惯先预测结果再验证，精读 Function Calling / 工具分发源码，能厘清「定义顺序 ≠ 执行顺序」等核心混淆点。</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== 联系 ===== -->
+<section id="contact">
+  <div class="wrap">
+    <div class="sec-head"><h2>联系我</h2><span class="en">CONTACT</span><span class="rule"></span></div>
+    <div class="contact-grid">
+      <a href="mailto:2632646392@qq.com">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        <span><div class="lab">邮箱</div><div class="val editable" data-key="email" data-single="1" data-link="email">2632646392@qq.com</div></span>
+      </a>
+      <div class="static-item">
+        <svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
+        <span><div class="lab">QQ / 电话</div><div class="val editable" data-key="qq" data-single="1">2632646392</div></span>
+      </div>
+      <a href="https://github.com/Heibaixiong1118" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M9 19c-4 1.5-4-2-6-2m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.3 4.3 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6 0C6.2 2.8 5.1 3.1 5.1 3.1a4.3 4.3 0 0 0-.1 3.2A4.6 4.6 0 0 0 3.7 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg>
+        <span><div class="lab">GitHub</div><div class="val editable" data-key="github" data-single="1" data-link="github">github.com/Heibaixiong1118</div></span>
+      </a>
+      <div class="static-item">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span><div class="lab">可到岗时间</div><div class="val editable" data-key="avail" data-single="1">随时到岗</div></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">本页为个人简历主页 · 最后更新 2026 年 · 在线填写后可直接打印 / 另存为 PDF</div>
+</footer>
+
+
+
+</body>
+</html>
